@@ -1,13 +1,21 @@
  
 from datetime import datetime
 
+class ChickenFood(Enum):
+    corn = 1
+    bread_crumbs = 2
+    seeds = 3
+    water = 4
+    
 class Chicken():   
 
     def __init__(self, name, hatch):
         print("I'm a new chicken named " + name + "!")
         self.hatched = hatch
         self.myname = name
-        self.last_fed = 
+        self.last_fed = datetime.now()
+        self.next_feed = datetime.now() + datetime.timedelta(minutes = 10)
+
     def Hatch(self): 
         if self.hatched == False:
             self.hatched = True
@@ -18,6 +26,12 @@ class Chicken():
             return "peep peep!"
         else:
             return "I'm an egg!"
+    
+    def FeedChicken(self, food):
+        if(type(food) is ChickenFood):
+            self.last_fed + datetime.timedelta(minutes = food)
+        else:
+            print("that's not chicken food, idiot!")
 
 class Farm():
     def __init__(self):
