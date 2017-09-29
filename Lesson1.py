@@ -1,25 +1,29 @@
 
 from datetime import datetime, timedelta
 
-class ChickenFood():
+class ChickenFood(object):
     corn = 1
     bread = 2
     seeds = 3
     water = 4
 
-    def __init__(self, intype):
+    def __init__(cls, intype):
         if intype == "corn":
-            return corn
-        if intype == "bread":
-            return bread
-        if intype == "seeds":
-            return seeds
-        if intype == "water":
-            return water
+            cls.value = cls.corn
+            cls.name = "corn"
+        elif intype == "bread":
+            cls.value = cls.bread
+            cls.name = "bread"
+        elif intype == "seeds":
+            cls.value = cls.seeds
+            cls.name = "seeds"
+        elif intype == "water":
+            cls.value = cls.water
+            cls.name = "water"
         else:
             raise ValueError("not a valid food")
-            
-class Chicken():   
+
+class Chicken(object):   
 
     def __init__(self, name, hatch):
         print("I'm a new chicken named " + name + "!")
@@ -27,23 +31,51 @@ class Chicken():
         self.myname = name
         self.last_fed = datetime.now()
         self.next_feed = datetime.now() + timedelta(minutes = 10)
+        self.fat_storage = timedelta(minutes = 10)
+        self.is_alive = True
 
-    def Hatch(self): 
+    def getLastFedTime(self):
+        return self.last_fed.strftime('%Y-%m-%d %H:%M:%S')
+
+    def getNextFedTime(self):
+        return self.next_feed.strftime('%Y-%m-%d %H:%M:%S')
+
+    def getHealth(self):
+        if (self.is_alive == False):
+            return "DEAD"
+        elif (datetime.now() > (self.next_feed + self.fat_storage)):
+            self.is_alive = False
+            return "DEAD"
+        return "ALIVE"
+
+    def getIsHungry(self):
+        if(self.getHealth() == "DEAD"):
+            raise ValueError("Chicken is dead!")
+        if (self.next_feed <= datetime.now()):
+            return True
+        elif (self.next_feed > datetime.now()):
+            return False
+
+    def hatch(self): 
         if self.hatched == False:
             self.hatched = True
             print(self.myname + ": I've been hatched!")
     
-    def GetStatus(self):
+    def getStatus(self):
         if (self.hatched == True):
-            return "peep peep!"
+            return "Hatched"
         else:
             return "I'm an egg!"
     
-    def FeedChicken(self, food):
-        if(type(food) is ChickenFood):
-            self.last_fed + datetime.timedelta(minutes = food.value)
-        else:
-            print("that's not chicken food, idiot!")
+    def feedChicken(self, food):
+        if (self.getIsHungry() == True):
+            if(type(food) is ChickenFood):
+                self.last_fed = datetime.now()
+                self.next_feed += timedelta(minutes = food.value)
+            else:
+                print("that's not chicken food, idiot!")
+                return
+        print("cluck cluck! I'm full!")
 
 class Farm():
     def __init__(self):
@@ -52,7 +84,6 @@ class Farm():
     def addChicken(self, chick):
         if(type(chick) is Chicken):
             self.coop.append(chick)
-            print("")
             print("cluck cluck!")
         else:
             print("that's not a chicken!")
@@ -73,11 +104,16 @@ class Farm():
             self.createChicken()
 
     def listChickens(self):
-        print("")
         chickencount = len(self.coop)
-        print("we have: " + str(chickencount) + " chickens")    
+        print("We have: " + str(chickencount) + " chickens!")    
         for chicken in self.coop:
-            print(chicken.myname + ": " + chicken.GetStatus())
+            print("")
+            print(chicken.myname + " " \
+                  + "\n\t Status: " + chicken.getStatus() \
+                  + "\n\t Health: " + chicken.getHealth() \
+                  + "\n\t Hungry: " + str(chicken.getIsHungry()) \
+                  + "\n\t Last fed: " + chicken.getLastFedTime() \
+                  + "\n\t Next feeding: " + chicken.getNextFedTime())
 
     def checkIfHatched(self):
         for chicken in self.coop:
@@ -87,18 +123,18 @@ class Farm():
 
     def getChicken(self, name):
         for chicken in self.coop:
-            if chicken.myname == name:
+            if chicken.myname.lower() == name.lower():
                 return chicken
+        raise ValueError("I don't know a chicken by that name! ..screamed the stable boy")
 
     def hatchChicken(self, name):
-        chicken = getChicken(input_name, self.coop)
-        if(chicken == None):
-            print("")
-            print("I don't know a chicken by that name! ..screamed the stable boy")
-            return False
-        else:
-            chicken.Hatch()
+        try:
+            chicken = self.getChicken(input_name, self.coop)
+            chicken.hatch()
             return True
+        except ValueError, e:
+            print(e)
+            return False
 
 def PrintOptions():
     print("--- Options ---")
@@ -154,12 +190,18 @@ while(avariable == True):
         farm.hatchChicken(input_name)
     
     elif input_option == 4:
-        input_name = raw_input("Name a chicken to feed: ")
-        chicken = farm.getChicken(input_name)
+        try:
+            input_name = raw_input("Name a chicken to feed: ")
+            chicken = farm.getChicken(input_name)
+        except ValueError, e:
+            print(e)
+            continue;
         try:
             infood = ChickenFood(raw_input("Choose a food: "))
-        except ValueError:
-            print("That's not food!")
+            chicken.feedChicken(infood)
+        except ValueError, e:
+            print(e)
+            continue;
 
     print("")
     input_from_user = raw_input("Quit? (Y / N): ")
