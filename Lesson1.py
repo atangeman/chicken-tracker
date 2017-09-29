@@ -1,12 +1,24 @@
- 
-from datetime import datetime
 
-class ChickenFood(Enum):
+from datetime import datetime, timedelta
+
+class ChickenFood():
     corn = 1
-    bread_crumbs = 2
+    bread = 2
     seeds = 3
     water = 4
-    
+
+    def __init__(self, intype):
+        if intype == "corn":
+            return corn
+        if intype == "bread":
+            return bread
+        if intype == "seeds":
+            return seeds
+        if intype == "water":
+            return water
+        else:
+            raise ValueError("not a valid food")
+            
 class Chicken():   
 
     def __init__(self, name, hatch):
@@ -14,7 +26,7 @@ class Chicken():
         self.hatched = hatch
         self.myname = name
         self.last_fed = datetime.now()
-        self.next_feed = datetime.now() + datetime.timedelta(minutes = 10)
+        self.next_feed = datetime.now() + timedelta(minutes = 10)
 
     def Hatch(self): 
         if self.hatched == False:
@@ -29,7 +41,7 @@ class Chicken():
     
     def FeedChicken(self, food):
         if(type(food) is ChickenFood):
-            self.last_fed + datetime.timedelta(minutes = food)
+            self.last_fed + datetime.timedelta(minutes = food.value)
         else:
             print("that's not chicken food, idiot!")
 
@@ -140,6 +152,14 @@ while(avariable == True):
     elif input_option == 3:
         input_name = raw_input("Name a chicken to hatch: ")
         farm.hatchChicken(input_name)
+    
+    elif input_option == 4:
+        input_name = raw_input("Name a chicken to feed: ")
+        chicken = farm.getChicken(input_name)
+        try:
+            infood = ChickenFood(raw_input("Choose a food: "))
+        except ValueError:
+            print("That's not food!")
 
     print("")
     input_from_user = raw_input("Quit? (Y / N): ")
