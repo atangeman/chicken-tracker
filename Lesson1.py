@@ -8,11 +8,14 @@ class ChickenFood(object):
     water = 4
 
     def __init__(cls, intype):
+        for name in vars(cls):
+            print(name)
+
         if intype == "corn":
             cls.value = cls.corn
             cls.name = "corn"
         elif intype == "bread":
-            cls.value = cls.bread
+            cls.value = cls.bread4
             cls.name = "bread"
         elif intype == "seeds":
             cls.value = cls.seeds
@@ -34,13 +37,13 @@ class Chicken(object):
         self.fat_storage = timedelta(minutes = 10)
         self.is_alive = True
 
-    def getLastFedTime(self):
+    def get_last_fed(self):
         return self.last_fed.strftime('%Y-%m-%d %H:%M:%S')
 
-    def getNextFedTime(self):
+    def get_next_fed(self):
         return self.next_feed.strftime('%Y-%m-%d %H:%M:%S')
 
-    def getHealth(self):
+    def get_health(self):
         if (self.is_alive == False):
             return "DEAD"
         elif (datetime.now() > (self.next_feed + self.fat_storage)):
@@ -48,7 +51,7 @@ class Chicken(object):
             return "DEAD"
         return "ALIVE"
 
-    def getIsHungry(self):
+    def get_hungry(self):
         if(self.getHealth() == "DEAD"):
             raise ValueError("Chicken is dead!")
         if (self.next_feed <= datetime.now()):
@@ -61,13 +64,13 @@ class Chicken(object):
             self.hatched = True
             print(self.myname + ": I've been hatched!")
     
-    def getStatus(self):
+    def get_status(self):
         if (self.hatched == True):
             return "Hatched"
         else:
             return "I'm an egg!"
     
-    def feedChicken(self, food):
+    def feed_chicken(self, food):
         if (self.getIsHungry() == True):
             if(type(food) is ChickenFood):
                 self.last_fed = datetime.now()
@@ -81,14 +84,14 @@ class Farm():
     def __init__(self):
         self.coop = []
 
-    def addChicken(self, chick):
+    def add_chicken(self, chick):
         if(type(chick) is Chicken):
             self.coop.append(chick)
             print("cluck cluck!")
         else:
             print("that's not a chicken!")
 
-    def createChicken(self):
+    def create_chicken(self):
         inputName = raw_input("Name a chicken: ")
         inputHatched = raw_input("Is it hatched? ")
 
@@ -103,7 +106,7 @@ class Farm():
             print("Not a valid input! ")
             self.createChicken()
 
-    def listChickens(self):
+    def list_chicken(self):
         chickencount = len(self.coop)
         print("We have: " + str(chickencount) + " chickens!")    
         for chicken in self.coop:
@@ -115,19 +118,21 @@ class Farm():
                   + "\n\t Last fed: " + chicken.getLastFedTime() \
                   + "\n\t Next feeding: " + chicken.getNextFedTime())
 
-    def checkIfHatched(self):
+    def count_chickens(self):
+        chick_count = 0
         for chicken in self.coop:
             if chicken.hatched == False:
-                print("Don't count your chickens before they've hatched!")
-                return
+                raise ValueError("Don't count your chickens before they've hatched!")
+            chick_count += 1
+        return chick_count
 
-    def getChicken(self, name):
+    def get_chicken(self, name):
         for chicken in self.coop:
             if chicken.myname.lower() == name.lower():
                 return chicken
         raise ValueError("I don't know a chicken by that name! ..screamed the stable boy")
 
-    def hatchChicken(self, name):
+    def hatch_eggs(self, name):
         try:
             chicken = self.getChicken(input_name, self.coop)
             chicken.hatch()
@@ -135,15 +140,19 @@ class Farm():
         except ValueError, e:
             print(e)
             return False
+    
+    def hatch_all_eggs(self):
+        map(lambda x : x.hatch(), self.coop)
 
 def PrintOptions():
     print("--- Options ---")
     print("")
     print("1: Create Chicken")
     print("2: List Chickens")
-    print("3: Hatch Chicken")
-    print("4: Feed Chicken")
-    print("5: Quit")
+    print("3: Count Chickens")        
+    print("4: Hatch Chicken")
+    print("5: Feed Chicken")
+    print("6: Quit")
 
 def GetOptionFromUser():
     print("")
@@ -156,13 +165,12 @@ def GetOptionFromUser():
 
 # ----- Application --------
 
-# ----- function end 
 
 farm = Farm()
 
-chicken1 = Chicken("Peaches", True)
+chicken1 = Chicken("Peaches", False)
 chicken2 = Chicken("Charlie", True)
-chicken3 = Chicken("Princess", True)
+chicken3 = Chicken("Princess", False)
 chicken4 = Chicken("Constantine", True)
 
 farm.addChicken(chicken1)
@@ -173,40 +181,46 @@ farm.addChicken(chicken4)
 
 avariable = True
 while(avariable == True):
-    print("")
-    PrintOptions()
+    try:
+        print("")
+        PrintOptions()
 
-    input_option = GetOptionFromUser()
-    print("")
+        input_option = GetOptionFromUser()
+        print("")
 
-    if input_option == 1:
-        farm.createChicken()
+        if input_option == 1:
+            farm.createChicken()
+            
+        elif input_option == 2:
+            farm.listChickens()
+
+        elif input_option == 3:
+            count = farm.countChickens()
+            print(str(count))
+
+        elif input_option == 4:
+            #input_name = raw_input("Name a chicken to hatch: ")
+            farm.hatch_all_eggs()
         
-    elif input_option == 2:
-        farm.listChickens()
-
-    elif input_option == 3:
-        input_name = raw_input("Name a chicken to hatch: ")
-        farm.hatchChicken(input_name)
-    
-    elif input_option == 4:
-        try:
+        elif input_option == 5:
             input_name = raw_input("Name a chicken to feed: ")
             chicken = farm.getChicken(input_name)
-        except ValueError, e:
-            print(e)
-            continue;
-        try:
+
             infood = ChickenFood(raw_input("Choose a food: "))
             chicken.feedChicken(infood)
-        except ValueError, e:
-            print(e)
-            continue;
 
-    print("")
-    input_from_user = raw_input("Quit? (Y / N): ")
+        elif input_option == 6:
+            print("")
+            input_from_user = raw_input("Quit? (Y / N): ")
 
-    if input_from_user.upper() == "Y":
-        avariable = False
-    elif input_from_user.upper() == "N":
-        avariable = True
+            if input_from_user.upper() == "Y":
+                avariable = False
+            elif input_from_user.upper() == "N":
+                avariable = True
+            
+    except ValueError, e:
+        print(e)
+
+    except Exception, ex:
+        print(ex)
+        exit(-1)
